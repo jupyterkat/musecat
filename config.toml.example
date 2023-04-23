@@ -1,0 +1,17 @@
+
+# Your bot's discord token, you should know this (required)
+discord_token = "thingy"
+# People who can run owners-only commands, takes a list of discord ids (required, can be empty)
+owners = []
+
+# Possible values: online, idle, donotdisturb, offline, invisible (optional)
+# bot_status = "online"
+
+# Possible values: listening, streaming, playing, watching, competing (optional)
+# bot_activity_type = "listening" 
+
+# Will be truncated to 127 characters if is above 128 characters (optional)
+# bot_activity = "music"
+
+# Only shows up on streaming activity type (optional)
+# bot_activity_url = ""
