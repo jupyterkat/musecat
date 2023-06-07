@@ -18,6 +18,10 @@ impl serenity::EventHandler for Handler {
 
         let config = get_config();
 
+        let application_id = ctx.http.application_id().unwrap_or(0);
+
+        println!("Ready! Invite the bot with https://discordapp.com/oauth2/authorize?client_id={application_id}&scope=bot%20applications.commands&permissions=36700160");
+
         let status = match config.bot_status.as_str() {
             "online" => serenity::OnlineStatus::Online,
             "idle" => serenity::OnlineStatus::Idle,
