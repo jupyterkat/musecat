@@ -11,22 +11,6 @@ pub struct Handler {
 #[serenity::async_trait]
 impl serenity::EventHandler for Handler {
     async fn ready(&self, ctx: serenity::Context, data_about_bot: serenity::Ready) {
-        if let Ok(cmd) =
-            serenity::model::application::command::Command::get_global_application_commands(
-                &ctx.http,
-            )
-            .await
-        {
-            for thing in cmd {
-                if let Err(e) = serenity::model::application::command::Command::delete_global_application_command(
-                    &ctx.http, thing.id,
-                )
-                .await {
-					log::error!("{:?}", e)
-				}
-            }
-        };
-
         if let Err(e) = poise::builtins::register_globally(&ctx.http, &self.options.commands).await
         {
             log::error!("{:?}", e)
@@ -159,7 +143,7 @@ impl serenity::EventHandler for Handler {
 
 async fn handle_voice_state_update(ctx: &serenity::Context, new: &serenity::VoiceState) {
     let Some(guild) = new
-		.guild_id
+        .guild_id
         .and_then(|guild_id| guild_id.to_guild_cached(&ctx.cache)) else { return };
     let manager = songbird::get(ctx).await.unwrap().clone();
     let Some(call) = manager.get(guild.id) else { return };
