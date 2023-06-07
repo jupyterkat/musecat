@@ -7,8 +7,8 @@ use crate::Context;
 use crate::Error;
 
 pub fn human_print_time(dur: std::time::Duration) -> String {
-    let minutes = (dur.as_secs() / 60) % 60;
-    let secs = dur.as_secs() % 60;
+    let minutes = dur.as_secs() / 60;
+    let secs = dur.as_secs() - minutes * 60;
     format!("[{:0<2}:{:0<2}]", minutes, secs)
 }
 
