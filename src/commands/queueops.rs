@@ -2,6 +2,13 @@ use crate::utils;
 use crate::Context;
 use crate::Error;
 
+fn link_is_youtube(link: &str) -> bool {
+    regex::Regex::new(r"/^(https?\:\/\/)?((www\.)?youtube\.com|youtu\.be)\/.+$/")
+        .unwrap()
+        .find(link)
+        .is_some()
+}
+
 /// Queues a track in, keep in mind that playlists and livestreams are not supported
 #[poise::command(slash_command)]
 pub async fn play(
@@ -33,7 +40,7 @@ pub async fn play(
     let (handler_lock, res) = manager.join(guild.id, channel_id).await;
     let mut handler = handler_lock.lock().await;
     let source = match {
-        if query.starts_with("https") {
+        if link_is_youtube(query.as_str()) {
             songbird::input::Restartable::ytdl(query, true).await
         } else {
             songbird::input::Restartable::ytdl_search(query, true).await
