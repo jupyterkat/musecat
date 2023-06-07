@@ -3,6 +3,11 @@ musicalcat
 
 a (mostly) pure-rust discord music bot. made for small servers
 
+features:
+- slash commands only
+- everyone can command the bot, it's a free-for-all
+- seeking
+
 ## building
 
 please have the latest stable version of rust ready, instructions to install are at https://www.rust-lang.org/tools/install
