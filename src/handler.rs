@@ -127,9 +127,13 @@ impl serenity::EventHandler for Handler {
         old: Option<serenity::VoiceState>,
         new: serenity::VoiceState,
     ) {
-        if let Err(e) = handle_voice_state_update(&ctx, &new).await {
-            log::error!("{:?}", e)
-        };
+
+        let config = get_config();
+        if config.bot_leave_on_empty {
+            if let Err(e) = handle_voice_state_update(&ctx, &new).await {
+                log::error!("{:?}", e)
+            };
+        }
         let shard_manager = (*self.shard_manager.lock().unwrap()).clone().unwrap();
         let framework_data = poise::FrameworkContext {
             bot_id: Default::default(),

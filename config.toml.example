@@ -15,3 +15,7 @@ owners = []
 
 # Only shows up on streaming activity type (optional)
 # bot_activity_url = ""
+
+
+# Whether the bot leaves the channel it's playing to if the channel is empty (optional)
+# bot_leave_on_empty = true

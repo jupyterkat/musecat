@@ -30,6 +30,8 @@ pub struct Config {
     pub bot_activity: String,
     #[serde(default)]
     pub bot_activity_url: String,
+    #[serde(default = "default_bot_leave")]
+    pub bot_leave_on_empty: bool,
 }
 
 fn default_bot_status() -> String {
@@ -42,4 +44,8 @@ fn default_bot_activity_type() -> String {
 
 fn default_bot_activity() -> String {
     "music".to_string()
+}
+
+fn default_bot_leave() -> bool {
+    true
 }
