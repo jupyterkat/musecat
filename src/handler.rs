@@ -127,7 +127,9 @@ impl serenity::EventHandler for Handler {
         old: Option<serenity::VoiceState>,
         new: serenity::VoiceState,
     ) {
-        handle_voice_state_update(&ctx, &new).await;
+        if let Err(e) = handle_voice_state_update(&ctx, &new).await {
+            log::error!("{:?}", e)
+        };
         let shard_manager = (*self.shard_manager.lock().unwrap()).clone().unwrap();
         let framework_data = poise::FrameworkContext {
             bot_id: Default::default(),
@@ -145,17 +147,35 @@ impl serenity::EventHandler for Handler {
     }
 }
 
-async fn handle_voice_state_update(ctx: &serenity::Context, new: &serenity::VoiceState) {
-    let Some(guild) = new
-        .guild_id
-        .and_then(|guild_id| guild_id.to_guild_cached(&ctx.cache)) else { return };
+async fn handle_voice_state_update(
+    ctx: &serenity::Context,
+    new: &serenity::VoiceState,
+) -> eyre::Result<()> {
+    let Some(guild_id) = new.guild_id else { return Ok(()) };
+
     let manager = songbird::get(ctx).await.unwrap().clone();
-    let Some(call) = manager.get(guild.id) else { return };
-    let Some(channel_id) = call.lock().await.current_channel().map(|item| item.0.into()) else { return };
-    let Some(channel) = guild.channels.get(&channel_id).cloned().and_then(serenity::Channel::guild) else { return };
+
+    let Some(call) = manager.get(guild_id) else { return Ok(()) };
+
+    let Some(cur_channel) = call
+        .lock()
+        .await
+        .current_channel()
+        .map(|item| item.0.into()) 
+    else { return Ok(()) };
+
+    let channels = guild_id.channels(&ctx.http).await?;
+
+    let Some(channel) = channels
+        .get(&cur_channel)
+        .cloned() 
+    else { return Ok(())};
+
     if channel.members(&ctx.cache).await.unwrap().is_empty() {
-        if let Err(e) = manager.remove(guild.id).await {
+        if let Err(e) = manager.remove(guild_id).await {
             log::error!("{:?}", e)
         }
     };
+
+    Ok(())
 }
