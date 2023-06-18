@@ -14,11 +14,18 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          components: rustfmt
       - uses: actions-rs/cargo@v1
         with:
           command: check
           args: --release
+  check-style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt
       - uses: actions-rs/cargo@v1
         with:
           command: fmt 
