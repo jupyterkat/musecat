@@ -174,7 +174,7 @@ async fn handle_voice_state_update(
         .cloned()
     else { return Ok(())};
 
-    //find non-botted users in the channel
+    //find non-botted users in the channel, if there isn't, then disconnect
 
     if channel
         .members(&ctx.cache)
