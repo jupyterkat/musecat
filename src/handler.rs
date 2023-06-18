@@ -175,7 +175,16 @@ async fn handle_voice_state_update(
         .cloned() 
     else { return Ok(())};
 
-    if channel.members(&ctx.cache).await.unwrap().is_empty() {
+    //find non-botted users in the channel
+
+    if channel
+        .members(&ctx.cache)
+        .await
+        .unwrap()
+        .into_iter()
+        .find(|member| !member.user.bot)
+        .is_none() 
+    {
         if let Err(e) = manager.remove(guild_id).await {
             log::error!("{:?}", e)
         }
