@@ -127,7 +127,6 @@ impl serenity::EventHandler for Handler {
         old: Option<serenity::VoiceState>,
         new: serenity::VoiceState,
     ) {
-
         let config = get_config();
         if config.bot_leave_on_empty {
             if let Err(e) = handle_voice_state_update(&ctx, &new).await {
@@ -165,14 +164,14 @@ async fn handle_voice_state_update(
         .lock()
         .await
         .current_channel()
-        .map(|item| item.0.into()) 
+        .map(|item| item.0.into())
     else { return Ok(()) };
 
     let channels = guild_id.channels(&ctx.http).await?;
 
     let Some(channel) = channels
         .get(&cur_channel)
-        .cloned() 
+        .cloned()
     else { return Ok(())};
 
     //find non-botted users in the channel
@@ -183,7 +182,7 @@ async fn handle_voice_state_update(
         .unwrap()
         .into_iter()
         .find(|member| !member.user.bot)
-        .is_none() 
+        .is_none()
     {
         if let Err(e) = manager.remove(guild_id).await {
             log::error!("{:?}", e)
