@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 # essentials
-tokio = { version = "1.28.2", features = ["rt", "rt-multi-thread", "fs", "sync", "parking_lot"] }
+tokio = { version = "1.29.0", features = ["rt", "rt-multi-thread", "fs", "sync", "parking_lot"] }
 poise = "0.5.5"
 songbird = { version = "0.3.2", features = ["builtin-queue", "yt-dlp"] }
 
@@ -18,7 +18,7 @@ eyre = "0.6.8"
 simple-eyre = "0.3.1"
 
 # parsings
-toml = "0.7.4"
+toml = "0.7.5"
 serde = "1.0.164"
 regex = "1.8.4"
 humantime = "2.1.0"
