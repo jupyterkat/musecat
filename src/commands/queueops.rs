@@ -3,10 +3,29 @@ use crate::Context;
 use crate::Error;
 
 fn link_is_youtube(link: &str) -> bool {
-    regex::Regex::new(r"/^(https?\:\/\/)?((www\.)?youtube\.com|youtu\.be)\/.+$/")
-        .unwrap()
-        .find(link)
-        .is_some()
+    let Ok(url) = url::Url::parse(link) else { return false};
+
+    match url.scheme() {
+        "https" | "http" => {}
+        _ => return false,
+    }
+
+    match url.host_str() {
+        Some(item) => {
+            let lowercase = item.to_lowercase();
+            match lowercase.as_str() {
+                "youtube.com" | "youtu.be" => (),
+                _ => return false,
+            }
+        }
+        None => return false,
+    }
+
+    if url.path().is_empty() {
+        return false;
+    }
+
+    true
 }
 
 /// Queues a track in, keep in mind that playlists and livestreams are not supported
