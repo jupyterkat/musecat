@@ -7,19 +7,24 @@ edition = "2021"
 
 [dependencies]
 # essentials
-tokio = { version = "1.29.1", features = ["rt", "rt-multi-thread", "fs", "sync", "parking_lot"] }
+tokio = { version = "1.32.0", features = [
+    "rt",
+    "rt-multi-thread",
+    "fs",
+    "sync",
+    "parking_lot",
+] }
 poise = "0.5.5"
 songbird = { version = "0.3.2", features = ["builtin-queue", "yt-dlp"] }
 
 # errors/loggings
-log = "0.4.19"
+log = "0.4.20"
 simplelog = "0.12.1"
 eyre = "0.6.8"
-simple-eyre = "0.3.1"
 
 # parsings
 toml = "0.7.6"
-serde = "1.0.182"
+serde = "1.0.185"
 regex = "1.9.3"
 humantime = "2.1.0"
 url = "2.4.0"
