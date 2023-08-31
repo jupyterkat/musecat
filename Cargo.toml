@@ -24,10 +24,10 @@ eyre = "0.6.8"
 
 # parsings
 toml = "0.7.6"
-serde = "1.0.185"
-regex = "1.9.3"
+serde = "1.0.188"
+regex = "1.9.4"
 humantime = "2.1.0"
-url = "2.4.0"
+url = "2.4.1"
 
 # shuffle
 rand = "0.8.5"
