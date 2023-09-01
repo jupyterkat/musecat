@@ -3,7 +3,9 @@ use crate::Context;
 use crate::Error;
 
 fn link_is_youtube(link: &str) -> bool {
-    let Ok(url) = url::Url::parse(link) else { return false};
+    let Ok(url) = url::Url::parse(link) else {
+        return false;
+    };
 
     match url.scheme() {
         "https" | "http" => {}
@@ -45,13 +47,13 @@ pub async fn play(
         return Ok(());
     };
 
-    let Some(channel_id) =
-        guild
-            .voice_states
-            .get(&ctx.author().id)
-            .and_then(|vstate| vstate.channel_id)
+    let Some(channel_id) = guild
+        .voice_states
+        .get(&ctx.author().id)
+        .and_then(|vstate| vstate.channel_id)
     else {
-        ctx.say("You've gotta be in a voice channel to play!").await?;
+        ctx.say("You've gotta be in a voice channel to play!")
+            .await?;
         return Ok(());
     };
 
@@ -107,7 +109,7 @@ pub async fn play(
 pub async fn stop(ctx: Context<'_>) -> Result<(), Error> {
     let Some(guild_id) = ctx.guild_id() else {
         ctx.say("I can only operate in a server!").await?;
-        return Ok(())
+        return Ok(());
     };
     let manager = songbird::get(ctx.serenity_context()).await.unwrap().clone();
 
@@ -128,8 +130,8 @@ pub async fn stop(ctx: Context<'_>) -> Result<(), Error> {
 #[poise::command(slash_command)]
 pub async fn next(ctx: Context<'_>) -> Result<(), Error> {
     let Some(handler_lock) = utils::get_handler_lock(&ctx).await? else {
-		return Ok(())
-	};
+        return Ok(());
+    };
 
     let guard = handler_lock.lock().await;
 
@@ -150,8 +152,8 @@ pub async fn next(ctx: Context<'_>) -> Result<(), Error> {
 #[poise::command(slash_command)]
 pub async fn shuffle(ctx: Context<'_>) -> Result<(), Error> {
     let Some(handler_lock) = utils::get_handler_lock(&ctx).await? else {
-		return Ok(())
-	};
+        return Ok(());
+    };
 
     let guard = handler_lock.lock().await;
 
@@ -180,8 +182,8 @@ pub async fn shuffle(ctx: Context<'_>) -> Result<(), Error> {
 #[poise::command(slash_command)]
 pub async fn clear(ctx: Context<'_>) -> Result<(), Error> {
     let Some(handler_lock) = utils::get_handler_lock(&ctx).await? else {
-		return Ok(())
-	};
+        return Ok(());
+    };
 
     let guard = handler_lock.lock().await;
 
@@ -221,8 +223,8 @@ pub async fn remove(
     #[description = "Number of additional tracks to remove, defaults to 0"] size: Option<usize>,
 ) -> Result<(), Error> {
     let Some(handler_lock) = utils::get_handler_lock(&ctx).await? else {
-		return Ok(())
-	};
+        return Ok(());
+    };
 
     let guard = handler_lock.lock().await;
 

@@ -6,8 +6,8 @@ use crate::Error;
 #[poise::command(slash_command)]
 pub async fn resume(ctx: Context<'_>) -> Result<(), Error> {
     let Some(handler_lock) = utils::get_handler_lock(&ctx).await? else {
-		return Ok(())
-	};
+        return Ok(());
+    };
 
     let guard = handler_lock.lock().await;
 
@@ -31,8 +31,8 @@ pub async fn resume(ctx: Context<'_>) -> Result<(), Error> {
 #[poise::command(slash_command)]
 pub async fn pause(ctx: Context<'_>) -> Result<(), Error> {
     let Some(handler_lock) = utils::get_handler_lock(&ctx).await? else {
-		return Ok(())
-	};
+        return Ok(());
+    };
 
     let guard = handler_lock.lock().await;
 
@@ -56,8 +56,8 @@ pub async fn pause(ctx: Context<'_>) -> Result<(), Error> {
 #[poise::command(slash_command)]
 pub async fn replay(ctx: Context<'_>) -> Result<(), Error> {
     let Some(handler_lock) = utils::get_handler_lock(&ctx).await? else {
-		return Ok(())
-	};
+        return Ok(());
+    };
 
     let guard = handler_lock.lock().await;
 
@@ -84,8 +84,8 @@ pub async fn seek(
     #[description = "Time to seek to, E.g '1min', '2min 2s'"] time: String,
 ) -> Result<(), Error> {
     let Some(handler_lock) = utils::get_handler_lock(&ctx).await? else {
-		return Ok(())
-	};
+        return Ok(());
+    };
 
     let guard = handler_lock.lock().await;
 
@@ -131,8 +131,8 @@ pub async fn loop_current(
     loop_times: Option<usize>,
 ) -> Result<(), Error> {
     let Some(handler_lock) = utils::get_handler_lock(&ctx).await? else {
-		return Ok(())
-	};
+        return Ok(());
+    };
 
     let guard = handler_lock.lock().await;
 
@@ -160,8 +160,8 @@ pub async fn loop_current(
 #[poise::command(slash_command)]
 pub async fn stop_looping(ctx: Context<'_>) -> Result<(), Error> {
     let Some(handler_lock) = utils::get_handler_lock(&ctx).await? else {
-		return Ok(())
-	};
+        return Ok(());
+    };
 
     let guard = handler_lock.lock().await;
 

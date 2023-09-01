@@ -29,7 +29,7 @@ fn track_title(meta: &songbird::input::Metadata) -> String {
 fn track_duration(meta: &songbird::input::Metadata, info: songbird::tracks::TrackState) -> String {
     let position = info.position;
     let Some(duration) = meta.duration else {
-        return "".to_string()
+        return "".to_string();
     };
     let button = {
         match info.playing {
@@ -78,8 +78,8 @@ pub async fn queue(
     page: Option<usize>,
 ) -> Result<(), Error> {
     let Some(handler_lock) = utils::get_handler_lock(&ctx).await? else {
-		return Ok(())
-	};
+        return Ok(());
+    };
 
     let guard = handler_lock.lock().await;
 
@@ -122,9 +122,10 @@ pub async fn queue(
     let queue_string = queue_pages.get(page - 1).unwrap();
 
     let Some(trackhandle) = queue.current() else {
-        ctx.say("I can't get the current track for some reason").await?;
+        ctx.say("I can't get the current track for some reason")
+            .await?;
         return Ok(());
-	};
+    };
 
     let meta = trackhandle.metadata();
     let info = trackhandle.get_info().await?;
@@ -170,8 +171,8 @@ pub async fn queue(
 #[poise::command(slash_command)]
 pub async fn current(ctx: Context<'_>) -> Result<(), Error> {
     let Some(handler_lock) = utils::get_handler_lock(&ctx).await? else {
-		return Ok(())
-	};
+        return Ok(());
+    };
 
     let guard = handler_lock.lock().await;
 

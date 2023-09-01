@@ -154,25 +154,30 @@ async fn handle_voice_state_update(
     ctx: &serenity::Context,
     new: &serenity::VoiceState,
 ) -> eyre::Result<()> {
-    let Some(guild_id) = new.guild_id else { return Ok(()) };
+    let Some(guild_id) = new.guild_id else {
+        return Ok(());
+    };
 
     let manager = songbird::get(ctx).await.unwrap().clone();
 
-    let Some(call) = manager.get(guild_id) else { return Ok(()) };
+    let Some(call) = manager.get(guild_id) else {
+        return Ok(());
+    };
 
     let Some(cur_channel) = call
         .lock()
         .await
         .current_channel()
         .map(|item| item.0.into())
-    else { return Ok(()) };
+    else {
+        return Ok(());
+    };
 
     let channels = guild_id.channels(&ctx.http).await?;
 
-    let Some(channel) = channels
-        .get(&cur_channel)
-        .cloned()
-    else { return Ok(())};
+    let Some(channel) = channels.get(&cur_channel).cloned() else {
+        return Ok(());
+    };
 
     //find non-botted users in the channel, if there isn't, then disconnect
 
