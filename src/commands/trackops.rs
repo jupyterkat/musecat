@@ -100,8 +100,7 @@ pub async fn seek(
                 .await?;
             return Ok(());
         }
-    }
-    .into();
+    };
 
     if let Some(total) = trackhandle.metadata().duration {
         if dur > total {

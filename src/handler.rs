@@ -186,8 +186,7 @@ async fn handle_voice_state_update(
         .await
         .unwrap()
         .into_iter()
-        .find(|member| !member.user.bot)
-        .is_none()
+        .any(|member| !member.user.bot)
     {
         if let Err(e) = manager.remove(guild_id).await {
             log::error!("{:?}", e)

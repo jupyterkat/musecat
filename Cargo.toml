@@ -14,7 +14,7 @@ tokio = { version = "1.32.0", features = [
     "sync",
     "parking_lot",
 ] }
-poise = "0.5.5"
+poise = "0.5.6"
 songbird = { version = "0.3.2", features = ["builtin-queue", "yt-dlp"] }
 
 # errors/loggings
@@ -23,9 +23,9 @@ simplelog = "0.12.1"
 eyre = "0.6.8"
 
 # parsings
-toml = "0.7.6"
+toml = "0.8.1"
 serde = "1.0.188"
-regex = "1.9.4"
+regex = "1.9.5"
 humantime = "2.1.0"
 url = "2.4.1"
 
