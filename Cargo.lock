@@ -1016,7 +1016,6 @@ dependencies = [
  "songbird",
  "tokio",
  "toml",
- "url",
 ]
 
 [[package]]

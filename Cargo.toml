@@ -28,7 +28,6 @@ toml = "0.8.8"
 serde = "1.0.193"
 regex = "1.10.2"
 humantime = "2.1.0"
-url = "2.5.0"
 
 # shuffle
 rand = "0.8.5"
