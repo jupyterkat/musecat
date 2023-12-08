@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
-use poise::serenity_prelude::Mutex;
+use poise::serenity_prelude::prelude::TypeMapKey;
 use songbird::Call;
+use tokio::sync::Mutex;
 
 use crate::Context;
 use crate::Error;
@@ -24,4 +25,35 @@ pub async fn get_handler_lock(&ctx: &Context<'_>) -> Result<Option<Arc<Mutex<Cal
         return Ok(None);
     };
     Ok(Some(handler_lock))
+}
+
+pub fn with_typemap_read<T, F>(track: &songbird::tracks::TrackHandle, f: F) -> T
+where
+    F: FnOnce(&songbird::typemap::TypeMap) -> T,
+{
+    f(&track.typemap().blocking_read())
+}
+
+pub fn with_typemap_write<T, F>(track: &songbird::tracks::TrackHandle, f: F) -> T
+where
+    F: FnOnce(&mut songbird::typemap::TypeMap) -> T,
+{
+    f(&mut track.typemap().blocking_write())
+}
+
+// YtDl requests need an HTTP client to operate -- we'll create and store our own.
+pub struct HttpKey;
+
+impl TypeMapKey for HttpKey {
+    type Value = reqwest::Client;
+}
+pub struct MetaKey;
+
+impl TypeMapKey for MetaKey {
+    type Value = CustomMetadata;
+}
+
+pub struct CustomMetadata {
+    pub aux_metadata: songbird::input::AuxMetadata,
+    pub requested_by: String,
 }

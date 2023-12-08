@@ -1,12 +1,11 @@
 use super::{Data, Error};
-use poise::serenity_prelude::{self as serenity, Activity};
+use poise::serenity_prelude::{self as serenity, ActivityData};
 
 use super::config::get_config;
 
 pub struct Handler {
     pub options: poise::FrameworkOptions<Data, Error>,
-    pub shard_manager:
-        std::sync::Mutex<Option<std::sync::Arc<tokio::sync::Mutex<serenity::ShardManager>>>>,
+    pub shard_manager: std::sync::Mutex<Option<std::sync::Arc<serenity::ShardManager>>>,
 }
 #[serenity::async_trait]
 impl serenity::EventHandler for Handler {
@@ -18,7 +17,7 @@ impl serenity::EventHandler for Handler {
 
         let config = get_config();
 
-        let application_id = ctx.http.application_id().unwrap_or(0);
+        let application_id = ctx.http.application_id().unwrap_or_default();
 
         println!("Ready! Invite the bot with https://discordapp.com/oauth2/authorize?client_id={application_id}&scope=bot%20applications.commands&permissions=36700160");
 
@@ -35,15 +34,17 @@ impl serenity::EventHandler for Handler {
         activity_string.truncate(127);
 
         let activity = match config.bot_activity_type.as_str() {
-            "listening" => Activity::listening(activity_string),
-            "streaming" => Activity::streaming(activity_string, config.bot_activity_url.as_str()),
-            "playing" => Activity::playing(activity_string),
-            "watching" => Activity::watching(activity_string),
-            "competing" => Activity::competing(activity_string),
-            _ => Activity::listening("music"),
+            "listening" => ActivityData::listening(activity_string),
+            "streaming" => {
+                ActivityData::streaming(activity_string, config.bot_activity_url.as_str()).unwrap()
+            }
+            "playing" => ActivityData::playing(activity_string),
+            "watching" => ActivityData::watching(activity_string),
+            "competing" => ActivityData::competing(activity_string),
+            _ => ActivityData::listening("music"),
         };
 
-        ctx.set_presence(Some(activity), status).await;
+        ctx.set_presence(Some(activity), status);
 
         let shard_manager = (*self.shard_manager.lock().unwrap()).clone().unwrap();
         let framework_data = poise::FrameworkContext {
@@ -56,11 +57,17 @@ impl serenity::EventHandler for Handler {
         poise::dispatch_event(
             framework_data,
             &ctx,
-            &poise::Event::Ready { data_about_bot },
+            serenity::FullEvent::Ready { data_about_bot },
         )
         .await;
     }
-    async fn guild_create(&self, ctx: serenity::Context, guild: serenity::Guild, is_new: bool) {
+
+    async fn guild_create(
+        &self,
+        ctx: serenity::Context,
+        guild: serenity::Guild,
+        is_new: Option<bool>,
+    ) {
         let shard_manager = (*self.shard_manager.lock().unwrap()).clone().unwrap();
         let framework_data = poise::FrameworkContext {
             bot_id: Default::default(),
@@ -72,7 +79,7 @@ impl serenity::EventHandler for Handler {
         poise::dispatch_event(
             framework_data,
             &ctx,
-            &poise::Event::GuildCreate { guild, is_new },
+            serenity::FullEvent::GuildCreate { guild, is_new },
         )
         .await;
     }
@@ -89,38 +96,11 @@ impl serenity::EventHandler for Handler {
         poise::dispatch_event(
             framework_data,
             &ctx,
-            &poise::Event::InteractionCreate { interaction },
+            serenity::FullEvent::InteractionCreate { interaction },
         )
         .await;
     }
-    /*
-    async fn message_update(
-        &self,
-        ctx: serenity::Context,
-        old_if_available: Option<serenity::Message>,
-        new: Option<serenity::Message>,
-        event: serenity::MessageUpdateEvent,
-    ) {
-        let shard_manager = (*self.shard_manager.lock().unwrap()).clone().unwrap();
-        let framework_data = poise::FrameworkContext {
-            bot_id: Default::default(),
-            options: &self.options,
-            user_data: &Data {},
-            shard_manager: &shard_manager,
-        };
 
-        poise::dispatch_event(
-            framework_data,
-            &ctx,
-            &poise::Event::MessageUpdate {
-                old_if_available,
-                new,
-                event,
-            },
-        )
-        .await;
-    }
-    */
     async fn voice_state_update(
         &self,
         ctx: serenity::Context,
@@ -144,7 +124,7 @@ impl serenity::EventHandler for Handler {
         poise::dispatch_event(
             framework_data,
             &ctx,
-            &poise::Event::VoiceStateUpdate { old, new },
+            serenity::FullEvent::VoiceStateUpdate { old, new },
         )
         .await;
     }
@@ -183,7 +163,6 @@ async fn handle_voice_state_update(
 
     if channel
         .members(&ctx.cache)
-        .await
         .unwrap()
         .into_iter()
         .any(|member| !member.user.bot)

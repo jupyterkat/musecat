@@ -34,9 +34,7 @@ pub async fn pause(ctx: Context<'_>) -> Result<(), Error> {
         return Ok(());
     };
 
-    let guard = handler_lock.lock().await;
-
-    let Some(trackhandle) = guard.queue().current() else {
+    let Some(trackhandle) = handler_lock.lock().await.queue().current() else {
         ctx.say("Nothing is queued right now!").await?;
         return Ok(());
     };
@@ -59,14 +57,15 @@ pub async fn replay(ctx: Context<'_>) -> Result<(), Error> {
         return Ok(());
     };
 
-    let guard = handler_lock.lock().await;
-
-    let Some(trackhandle) = guard.queue().current() else {
+    let Some(trackhandle) = handler_lock.lock().await.queue().current() else {
         ctx.say("Nothing is queued right now!").await?;
         return Ok(());
     };
 
-    if let Err(e) = trackhandle.seek_time(std::time::Duration::from_secs(0)) {
+    if let Err(e) = trackhandle
+        .seek_async(std::time::Duration::from_secs(0))
+        .await
+    {
         ctx.say(format!("Error running track command:\n```{:?}```", e))
             .await?;
         return Ok(());
@@ -87,9 +86,7 @@ pub async fn seek(
         return Ok(());
     };
 
-    let guard = handler_lock.lock().await;
-
-    let Some(trackhandle) = guard.queue().current() else {
+    let Some(trackhandle) = handler_lock.lock().await.queue().current() else {
         ctx.say("Nothing is queued right now!").await?;
         return Ok(());
     };
@@ -102,14 +99,25 @@ pub async fn seek(
         }
     };
 
-    if let Some(total) = trackhandle.metadata().duration {
+    if let Some(total) = trackhandle
+        .typemap()
+        .read()
+        .await
+        .get::<utils::MetaKey>()
+        .unwrap()
+        .aux_metadata
+        .duration
+    {
         if dur > total {
             ctx.say("The track is not that long!").await?;
             return Ok(());
         }
+    } else {
+        ctx.say("This track is not seekable!").await?;
+        return Ok(());
     }
 
-    if let Err(e) = trackhandle.seek_time(dur) {
+    if let Err(e) = trackhandle.seek_async(dur).await {
         ctx.say(format!("Error running track command:\n```{:?}```", e))
             .await?;
         return Ok(());
@@ -133,9 +141,7 @@ pub async fn loop_current(
         return Ok(());
     };
 
-    let guard = handler_lock.lock().await;
-
-    let Some(trackhandle) = guard.queue().current() else {
+    let Some(trackhandle) = handler_lock.lock().await.queue().current() else {
         ctx.say("Nothing is queued right now!").await?;
         return Ok(());
     };
@@ -162,9 +168,7 @@ pub async fn stop_looping(ctx: Context<'_>) -> Result<(), Error> {
         return Ok(());
     };
 
-    let guard = handler_lock.lock().await;
-
-    let Some(trackhandle) = guard.queue().current() else {
+    let Some(trackhandle) = handler_lock.lock().await.queue().current() else {
         ctx.say("Nothing is queued right now!").await?;
         return Ok(());
     };

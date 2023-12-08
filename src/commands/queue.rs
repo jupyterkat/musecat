@@ -7,12 +7,9 @@ use poise::serenity_prelude::colours::roles::DARK_RED;
 
 use songbird::tracks::{LoopState, PlayMode};
 
-fn track_title(meta: &songbird::input::Metadata) -> String {
-    let source_url = meta
-        .source_url
-        .clone()
-        .unwrap_or("https://www.youtube.com".to_string());
-    let title = meta.title.clone().unwrap_or("Untitled".to_string());
+fn track_title(url: Option<String>, title: Option<String>) -> String {
+    let source_url = url.unwrap_or("https://www.youtube.com".to_string());
+    let title = title.unwrap_or("Untitled".to_string());
     let mut title = regex::Regex::new(r"/\[.*\]/")
         .unwrap()
         .replace_all(&title, "")
@@ -26,9 +23,12 @@ fn track_title(meta: &songbird::input::Metadata) -> String {
     format!("[{}]({})", title, source_url)
 }
 
-fn track_duration(meta: &songbird::input::Metadata, info: songbird::tracks::TrackState) -> String {
+fn track_duration(
+    duration: Option<std::time::Duration>,
+    info: songbird::tracks::TrackState,
+) -> String {
     let position = info.position;
-    let Some(duration) = meta.duration else {
+    let Some(duration) = duration else {
         return "".to_string();
     };
     let button = {
@@ -108,11 +108,19 @@ pub async fn queue(
                     if index == 0 && chunk_index == 0 {
                         return None;
                     }
-                    let meta = handle.metadata();
+                    let (url, duration, title) = utils::with_typemap_read(handle, |map| {
+                        let meta = map.get::<utils::MetaKey>().unwrap();
+                        (
+                            meta.aux_metadata.source_url.clone(),
+                            meta.aux_metadata.duration,
+                            meta.aux_metadata.title.clone(),
+                        )
+                    });
+
                     let songnum = index + 1 + chunk_index * PAGE_SIZE;
-                    let duration = meta.duration.unwrap_or(Default::default());
+                    let duration = duration.unwrap_or(Default::default());
                     let duration = utils::human_print_time(duration);
-                    let title = track_title(meta);
+                    let title = track_title(url, title);
                     Some(format!("`{songnum}.` {title} `{duration}`\n"))
                 })
                 .collect::<String>()
@@ -127,12 +135,21 @@ pub async fn queue(
         return Ok(());
     };
 
-    let meta = trackhandle.metadata();
+    let (url, duration, title, requested_by, channel) =
+        utils::with_typemap_read(&trackhandle, |map| {
+            let meta = map.get::<utils::MetaKey>().unwrap();
+            (
+                meta.aux_metadata.source_url.clone(),
+                meta.aux_metadata.duration,
+                meta.aux_metadata.title.clone(),
+                meta.requested_by.clone(),
+                meta.aux_metadata.channel.clone(),
+            )
+        });
     let info = trackhandle.get_info().await?;
-
-    ctx.send(|builder| {
-        builder.embed(|embedbuilder| {
-            embedbuilder
+    ctx.send(
+        poise::CreateReply::default().embed(
+            poise::serenity_prelude::CreateEmbed::default()
                 .color(match info.playing {
                     PlayMode::Play => DARK_GREEN,
                     _ => DARK_RED,
@@ -143,25 +160,20 @@ pub async fn queue(
                     _ => "Not playing anything now",
                 })
                 .description(format!(
-                    "{}\nRequested by: {}\n\n{}\n\n**Up next:**\n{queue_string}",
-                    track_title(meta),
-                    meta.artist.as_ref().unwrap(),
-                    track_duration(meta, info)
+                    "{}\nRequested by: {requested_by}\n\n{}\n\n**Up next:**\n{queue_string}",
+                    track_title(url, title),
+                    track_duration(duration, info)
                 ))
                 .fields(vec![
                     ("In queue", queue_size_fmt(queue_len), true),
                     ("Page", format!("{page} out of {}", queue_pages.len()), true),
                 ])
-                .footer(|footer| {
-                    footer.text({
-                        format!(
-                            "From: {}",
-                            meta.channel.as_ref().unwrap_or(&"Unknown".to_string())
-                        )
-                    })
-                })
-        })
-    })
+                .footer(poise::serenity_prelude::CreateEmbedFooter::new(format!(
+                    "From: {}",
+                    channel.unwrap_or("Unknown".to_string())
+                ))),
+        ),
+    )
     .await?;
 
     Ok(())
@@ -174,19 +186,28 @@ pub async fn current(ctx: Context<'_>) -> Result<(), Error> {
         return Ok(());
     };
 
-    let guard = handler_lock.lock().await;
-
-    let Some(trackhandle) = guard.queue().current() else {
+    let Some(trackhandle) = handler_lock.lock().await.queue().current() else {
         ctx.say("Nothing is queued right now!").await?;
         return Ok(());
     };
 
-    let meta = trackhandle.metadata();
+    let (url, duration, title, requested_by, channel) =
+        utils::with_typemap_read(&trackhandle, |map| {
+            let meta = map.get::<utils::MetaKey>().unwrap();
+            (
+                meta.aux_metadata.source_url.clone(),
+                meta.aux_metadata.duration,
+                meta.aux_metadata.title.clone(),
+                meta.requested_by.clone(),
+                meta.aux_metadata.channel.clone(),
+            )
+        });
+
     let info = trackhandle.get_info().await?;
 
-    ctx.send(|builder| {
-        builder.embed(|embedbuilder| {
-            embedbuilder
+    ctx.send(
+        poise::CreateReply::default().embed(
+            poise::serenity_prelude::CreateEmbed::default()
                 .color(match info.playing {
                     PlayMode::Play => DARK_GREEN,
                     _ => DARK_RED,
@@ -198,20 +219,16 @@ pub async fn current(ctx: Context<'_>) -> Result<(), Error> {
                 })
                 .description(format!(
                     "{}\nRequested by: {}\n\n{}\n\n",
-                    track_title(meta),
-                    meta.artist.as_ref().unwrap(),
-                    track_duration(meta, info)
+                    track_title(url, title),
+                    requested_by,
+                    track_duration(duration, info)
                 ))
-                .footer(|footer| {
-                    footer.text({
-                        format!(
-                            "From: {}",
-                            meta.channel.as_ref().unwrap_or(&"Unknown".to_string())
-                        )
-                    })
-                })
-        })
-    })
+                .footer(poise::serenity_prelude::CreateEmbedFooter::new(format!(
+                    "From: {}",
+                    channel.unwrap_or("Unknown".to_string())
+                ))),
+        ),
+    )
     .await?;
 
     Ok(())

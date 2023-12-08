@@ -2,34 +2,6 @@ use crate::utils;
 use crate::Context;
 use crate::Error;
 
-fn link_is_youtube(link: &str) -> bool {
-    let Ok(url) = url::Url::parse(link) else {
-        return false;
-    };
-
-    match url.scheme() {
-        "https" | "http" => {}
-        _ => return false,
-    }
-
-    match url.host_str() {
-        Some(item) => {
-            let lowercase = item.to_lowercase();
-            match lowercase.as_str() {
-                "youtube.com" | "youtu.be" => (),
-                _ => return false,
-            }
-        }
-        None => return false,
-    }
-
-    if url.path().is_empty() {
-        return false;
-    }
-
-    true
-}
-
 /// Queues a track in, keep in mind that playlists and livestreams are not supported
 #[poise::command(slash_command)]
 pub async fn play(
@@ -42,12 +14,14 @@ pub async fn play(
     #[flag]
     track_loop: bool,
 ) -> Result<(), Error> {
-    let Some(guild) = ctx.guild() else {
+    let Some(guild_id) = ctx.guild_id() else {
         ctx.say("I can only operate in a server!").await?;
         return Ok(());
     };
 
-    let Some(channel_id) = guild
+    let Some(channel_id) = guild_id
+        .to_guild_cached(ctx.serenity_context())
+        .unwrap()
         .voice_states
         .get(&ctx.author().id)
         .and_then(|vstate| vstate.channel_id)
@@ -56,51 +30,52 @@ pub async fn play(
             .await?;
         return Ok(());
     };
+    let http_client = {
+        let data = ctx.serenity_context().data.read().await;
+        data.get::<utils::HttpKey>().cloned().unwrap()
+    };
 
     let manager = songbird::get(ctx.serenity_context()).await.unwrap().clone();
-    let (handler_lock, res) = manager.join(guild.id, channel_id).await;
-    let mut handler = handler_lock.lock().await;
-    let source = match {
-        if link_is_youtube(query.as_str()) {
-            songbird::input::Restartable::ytdl(query, true).await
-        } else {
-            songbird::input::Restartable::ytdl_search(query, true).await
-        }
-    } {
-        Ok(src) => src,
-        Err(why) => {
-            ctx.say(format!("Can't start the source, whoops!\n```{:?}```", why))
-                .await?;
-            return Ok(());
-        }
-    };
+    let call = manager.join(guild_id, channel_id).await?;
+    let source = songbird::input::YoutubeDl::new(http_client, query);
 
     let mut source: songbird::input::Input = source.into();
 
     let id = format!("<@{}>", ctx.author().id);
 
-    source.metadata.as_mut().artist = Some(id);
+    let aux_metadata = source.aux_metadata().await?;
+    let title = aux_metadata.title.clone();
 
-    let track = if immediate {
-        handler.queue().stop();
-        handler.enqueue_source(source)
-    } else {
-        handler.enqueue_source(source)
+    let track = {
+        let mut handler = call.lock().await;
+        if immediate {
+            handler.queue().stop();
+            handler.enqueue_input(source)
+        } else {
+            handler.enqueue_input(source)
+        }
+        .await
     };
 
     if track_loop {
         track.enable_loop().unwrap();
     }
 
-    let meta = track.metadata();
+    utils::with_typemap_write(&track, |map| {
+        map.entry::<utils::MetaKey>().and_modify(|item| {
+            *item = utils::CustomMetadata {
+                aux_metadata,
+                requested_by: id,
+            }
+        });
+    });
 
     ctx.say(format!(
         "Got it!. Added **{}** to the queue",
-        meta.title.as_ref().unwrap_or(&("Untitled".to_string()))
+        title.as_ref().unwrap_or(&("Untitled".to_string()))
     ))
     .await?;
 
-    res?;
     Ok(())
 }
 
@@ -133,11 +108,7 @@ pub async fn next(ctx: Context<'_>) -> Result<(), Error> {
         return Ok(());
     };
 
-    let guard = handler_lock.lock().await;
-
-    let queue = guard.queue();
-
-    if let Err(e) = queue.skip() {
+    if let Err(e) = handler_lock.lock().await.queue().skip() {
         ctx.say(format!("Error running command:\n```{:?}```", e))
             .await?;
         return Ok(());

@@ -47,7 +47,7 @@ async fn main() -> eyre::Result<()> {
             owners: config
                 .owners
                 .iter()
-                .map(|&thin| serenity::UserId(thin))
+                .map(|&thin| serenity::UserId::new(thin))
                 .collect(),
             ..Default::default()
         },
@@ -60,6 +60,7 @@ async fn main() -> eyre::Result<()> {
     let mut client = serenity::Client::builder(&config.discord_token, intents)
         .event_handler_arc(handler.clone())
         .register_songbird_with(player.clone())
+        .type_map_insert::<utils::HttpKey>(reqwest::Client::new())
         .await?;
     *handler.shard_manager.lock().unwrap() = Some(client.shard_manager.clone());
 
