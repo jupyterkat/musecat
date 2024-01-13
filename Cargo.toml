@@ -16,7 +16,7 @@ tokio = { version = "1.35.1", features = [
 ] }
 poise = { git = "https://github.com/serenity-rs/poise/" }
 songbird = { version = "0.4.0", features = ["builtin-queue"] }
-reqwest = { version = "0.11.22", default-features = false, features = [
+reqwest = { version = "0.11.23", default-features = false, features = [
     "rustls-tls",
 ] }
 
@@ -27,7 +27,7 @@ eyre = "0.6.11"
 
 # parsings
 toml = "0.8.8"
-serde = "1.0.193"
+serde = "1.0.195"
 regex = "1.10.2"
 humantime = "2.1.0"
 
