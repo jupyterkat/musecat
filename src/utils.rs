@@ -34,11 +34,20 @@ where
     f(&track.typemap().blocking_read())
 }
 
-pub fn with_typemap_write<T, F>(track: &songbird::tracks::TrackHandle, f: F) -> T
+pub async fn with_typemap_read_async<T, F>(track: &songbird::tracks::TrackHandle, f: F) -> T
+where
+    F: FnOnce(&songbird::typemap::TypeMap) -> T,
+{
+    let lock = track.typemap().read().await;
+    f(&lock)
+}
+
+pub async fn with_typemap_write_async<T, F>(track: &songbird::tracks::TrackHandle, f: F) -> T
 where
     F: FnOnce(&mut songbird::typemap::TypeMap) -> T,
 {
-    f(&mut track.typemap().blocking_write())
+    let mut lock = track.typemap().write().await;
+    f(&mut lock)
 }
 
 // YtDl requests need an HTTP client to operate -- we'll create and store our own.

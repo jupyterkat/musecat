@@ -50,25 +50,23 @@ pub async fn play(
         let mut handler = call.lock().await;
         if immediate {
             handler.queue().stop();
-            handler.enqueue_input(source)
-        } else {
-            handler.enqueue_input(source)
         }
-        .await
+        handler.enqueue_input(source).await
     };
 
     if track_loop {
         track.enable_loop().unwrap();
     }
 
-    utils::with_typemap_write(&track, |map| {
+    utils::with_typemap_write_async(&track, |map| {
         map.entry::<utils::MetaKey>().and_modify(|item| {
             *item = utils::CustomMetadata {
                 aux_metadata,
                 requested_by: id,
             }
         });
-    });
+    })
+    .await;
 
     ctx.say(format!(
         "Got it!. Added **{}** to the queue",

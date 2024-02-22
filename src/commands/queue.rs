@@ -2,6 +2,8 @@ use crate::utils;
 use crate::Context;
 use crate::Error;
 
+use std::fmt::Write;
+
 use poise::serenity_prelude::colours::roles::DARK_GREEN;
 use poise::serenity_prelude::colours::roles::DARK_RED;
 
@@ -104,10 +106,9 @@ pub async fn queue(
             slice
                 .iter()
                 .enumerate()
-                .filter_map(|(index, handle)| {
-                    if index == 0 && chunk_index == 0 {
-                        return None;
-                    }
+                .filter(|(index, _)| !(*index == 0 && chunk_index == 0))
+                .fold("".to_owned(), |mut string, (index, handle)| {
+                    //TODO: do something about this once async closures are allowed here
                     let (url, duration, title) = utils::with_typemap_read(handle, |map| {
                         let meta = map.get::<utils::MetaKey>().unwrap();
                         (
@@ -118,12 +119,12 @@ pub async fn queue(
                     });
 
                     let songnum = index + 1 + chunk_index * PAGE_SIZE;
-                    let duration = duration.unwrap_or(Default::default());
+                    let duration = duration.unwrap_or_else(Default::default);
                     let duration = utils::human_print_time(duration);
                     let title = track_title(url, title);
-                    Some(format!("`{songnum}.` {title} `{duration}`\n"))
+                    _ = writeln!(&mut string, "`{songnum}.` {title} `{duration}`");
+                    string
                 })
-                .collect::<String>()
         })
         .collect::<Vec<_>>();
 
@@ -136,7 +137,7 @@ pub async fn queue(
     };
 
     let (url, duration, title, requested_by, channel) =
-        utils::with_typemap_read(&trackhandle, |map| {
+        utils::with_typemap_read_async(&trackhandle, |map| {
             let meta = map.get::<utils::MetaKey>().unwrap();
             (
                 meta.aux_metadata.source_url.clone(),
@@ -145,7 +146,8 @@ pub async fn queue(
                 meta.requested_by.clone(),
                 meta.aux_metadata.channel.clone(),
             )
-        });
+        })
+        .await;
     let info = trackhandle.get_info().await?;
     ctx.send(
         poise::CreateReply::default().embed(
@@ -192,7 +194,7 @@ pub async fn current(ctx: Context<'_>) -> Result<(), Error> {
     };
 
     let (url, duration, title, requested_by, channel) =
-        utils::with_typemap_read(&trackhandle, |map| {
+        utils::with_typemap_read_async(&trackhandle, |map| {
             let meta = map.get::<utils::MetaKey>().unwrap();
             (
                 meta.aux_metadata.source_url.clone(),
@@ -201,7 +203,8 @@ pub async fn current(ctx: Context<'_>) -> Result<(), Error> {
                 meta.requested_by.clone(),
                 meta.aux_metadata.channel.clone(),
             )
-        });
+        })
+        .await;
 
     let info = trackhandle.get_info().await?;
 

@@ -47,7 +47,8 @@ async fn main() -> eyre::Result<()> {
             owners: config
                 .owners
                 .iter()
-                .map(|&thin| serenity::UserId::new(thin))
+                .copied()
+                .map(serenity::UserId::new)
                 .collect(),
             ..Default::default()
         },
