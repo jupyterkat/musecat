@@ -8,7 +8,7 @@ resolver = "2"
 
 [dependencies]
 # essentials
-tokio = { version = "1.37.0", features = [
+tokio = { version = "1.44.1", features = [
     "rt",
     "rt-multi-thread",
     "fs",
@@ -16,25 +16,21 @@ tokio = { version = "1.37.0", features = [
     "parking_lot",
 ] }
 poise = "0.6.1"
-#{ git = "https://github.com/serenity-rs/poise/" }
-#songbird = { version = "0.4.1", features = ["builtin-queue"] }
-songbird = { git = "https://github.com/jupyterkat/songbird", branch = "current-cat", features = [
-    "builtin-queue",
-] }
+songbird = { version = "0.5.0", features = ["builtin-queue"] }
 reqwest = { version = "0.12", default-features = false, features = [
     "rustls-tls",
 ] }
 
 # errors/loggings
-log = "0.4.21"
+log = "0.4.27"
 simplelog = "0.12.2"
 eyre = "0.6.12"
 
 # parsings
-toml = "0.8.13"
-serde = "1.0.202"
-regex = "1.10.4"
-humantime = "2.1.0"
+toml = "0.8.20"
+serde = "1.0.219"
+regex = "1.11.1"
+humantime = "2.2.0"
 
 # shuffle
-rand = "0.8.5"
+rand = "0.9.0"

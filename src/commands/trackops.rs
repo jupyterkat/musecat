@@ -100,11 +100,9 @@ pub async fn seek(
     };
 
     if let Some(total) = trackhandle
-        .typemap()
+        .data::<tokio::sync::RwLock<crate::utils::CustomMetadata>>()
         .read()
         .await
-        .get::<utils::MetaKey>()
-        .unwrap()
         .aux_metadata
         .duration
     {

@@ -51,22 +51,19 @@ pub async fn play(
         if immediate {
             handler.queue().stop();
         }
-        handler.enqueue_input(source).await
+        let track = songbird::tracks::Track::new_with_data(
+            source,
+            std::sync::Arc::new(utils::CustomMetadata {
+                aux_metadata,
+                requested_by: id,
+            }),
+        );
+        handler.enqueue(track).await
     };
 
     if track_loop {
         track.enable_loop().unwrap();
     }
-
-    utils::with_typemap_write_async(&track, |map| {
-        map.entry::<utils::MetaKey>().and_modify(|item| {
-            *item = utils::CustomMetadata {
-                aux_metadata,
-                requested_by: id,
-            }
-        });
-    })
-    .await;
 
     ctx.say(format!(
         "Got it!. Added **{}** to the queue",
@@ -136,7 +133,7 @@ pub async fn shuffle(ctx: Context<'_>) -> Result<(), Error> {
     queue.modify_queue(|queue| {
         use rand::seq::SliceRandom;
         let front = queue.pop_front().unwrap();
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         queue.make_contiguous().shuffle(&mut rng);
         queue.push_front(front);

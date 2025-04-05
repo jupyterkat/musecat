@@ -27,39 +27,11 @@ pub async fn get_handler_lock(&ctx: &Context<'_>) -> Result<Option<Arc<Mutex<Cal
     Ok(Some(handler_lock))
 }
 
-pub fn with_typemap_read<T, F>(track: &songbird::tracks::TrackHandle, f: F) -> T
-where
-    F: FnOnce(&songbird::typemap::TypeMap) -> T,
-{
-    f(&track.typemap().blocking_read())
-}
-
-pub async fn with_typemap_read_async<T, F>(track: &songbird::tracks::TrackHandle, f: F) -> T
-where
-    F: FnOnce(&songbird::typemap::TypeMap) -> T,
-{
-    let lock = track.typemap().read().await;
-    f(&lock)
-}
-
-pub async fn with_typemap_write_async<T, F>(track: &songbird::tracks::TrackHandle, f: F) -> T
-where
-    F: FnOnce(&mut songbird::typemap::TypeMap) -> T,
-{
-    let mut lock = track.typemap().write().await;
-    f(&mut lock)
-}
-
 // YtDl requests need an HTTP client to operate -- we'll create and store our own.
 pub struct HttpKey;
 
 impl TypeMapKey for HttpKey {
     type Value = reqwest::Client;
-}
-pub struct MetaKey;
-
-impl TypeMapKey for MetaKey {
-    type Value = CustomMetadata;
 }
 
 pub struct CustomMetadata {
