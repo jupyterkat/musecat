@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::utils;
 use crate::Context;
 use crate::Error;
@@ -7,7 +9,7 @@ use crate::Error;
 pub async fn play(
     ctx: Context<'_>,
     #[description = "YouTube URL or query string"] query: String,
-    #[description = "Play the track now (This will clear the queue!)"]
+    #[description = "Play the track now (This will insert the track in the front of the queue and plays it!)"]
     #[flag]
     immediate: bool,
     #[description = "Loop the track"]
@@ -48,9 +50,6 @@ pub async fn play(
 
     let track = {
         let mut handler = call.lock().await;
-        if immediate {
-            handler.queue().stop();
-        }
         let track = songbird::tracks::Track::new_with_data(
             source,
             std::sync::Arc::new(utils::CustomMetadata {
@@ -58,7 +57,25 @@ pub async fn play(
                 requested_by: id,
             }),
         );
-        handler.enqueue(track).await
+
+        if immediate {
+            if let Some(trackhandle) = handler.queue().current() {
+                trackhandle.pause()?;
+                trackhandle.seek_async(Duration::from_secs(0)).await?;
+            };
+            handler.enqueue(track).await;
+            handler.queue().modify_queue(|queue| {
+                if queue.len() == 1 {
+                    return;
+                }
+                if let Some(backelem) = queue.pop_back() {
+                    queue.push_front(backelem);
+                };
+            });
+            handler.queue().current().unwrap()
+        } else {
+            handler.enqueue(track).await
+        }
     };
 
     if track_loop {
