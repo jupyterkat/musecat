@@ -32,6 +32,7 @@ pub async fn play(
             .await?;
         return Ok(());
     };
+    ctx.defer().await?;
     let http_client = {
         let data = ctx.serenity_context().data.read().await;
         data.get::<utils::HttpKey>().cloned().unwrap()
