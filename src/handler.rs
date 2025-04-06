@@ -10,10 +10,6 @@ pub struct Handler {
 #[serenity::async_trait]
 impl serenity::EventHandler for Handler {
     async fn ready(&self, ctx: serenity::Context, data_about_bot: serenity::Ready) {
-        if let Err(e) = serenity::Command::set_global_commands(&ctx.http, vec![]).await {
-            log::error!("{:?}", e)
-        };
-
         if let Err(e) = poise::builtins::register_globally(&ctx.http, &self.options.commands).await
         {
             log::error!("{:?}", e)
@@ -165,7 +161,7 @@ async fn handle_voice_state_update(
 
     //find non-botted users in the channel, if there isn't, then disconnect
 
-    if channel
+    if !channel
         .members(&ctx.cache)
         .unwrap()
         .into_iter()
