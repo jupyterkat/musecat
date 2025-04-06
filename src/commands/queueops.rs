@@ -75,7 +75,7 @@ pub async fn play(
             });
             handler.queue().current().unwrap()
         } else {
-            handler.enqueue_with_preload(track, None)
+            handler.play(track)
         }
     };
 
