@@ -64,7 +64,7 @@ pub async fn play(
                 trackhandle.pause()?;
                 trackhandle.seek_async(Duration::from_secs(0)).await?;
             };
-            handler.enqueue(track).await;
+            handler.enqueue_with_preload(track, None);
             handler.queue().modify_queue(|queue| {
                 if queue.len() == 1 {
                     return;
@@ -75,7 +75,7 @@ pub async fn play(
             });
             handler.queue().current().unwrap()
         } else {
-            handler.enqueue(track).await
+            handler.enqueue_with_preload(track, None)
         }
     };
 
