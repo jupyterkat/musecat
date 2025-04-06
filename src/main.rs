@@ -31,6 +31,7 @@ async fn main() -> eyre::Result<()> {
         options: poise::FrameworkOptions {
             commands: vec![
                 register(),
+                commands::queueops::play_test(),
                 commands::queueops::play(),
                 commands::queueops::stop(),
                 commands::queueops::next(),
