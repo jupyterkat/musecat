@@ -10,6 +10,10 @@ pub struct Handler {
 #[serenity::async_trait]
 impl serenity::EventHandler for Handler {
     async fn ready(&self, ctx: serenity::Context, data_about_bot: serenity::Ready) {
+        if let Err(e) = serenity::Command::set_global_commands(&ctx.http, vec![]).await {
+            log::error!("{:?}", e)
+        };
+
         if let Err(e) = poise::builtins::register_globally(&ctx.http, &self.options.commands).await
         {
             log::error!("{:?}", e)
