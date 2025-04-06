@@ -6,6 +6,45 @@ use crate::Error;
 
 /// Queues a track in, keep in mind that playlists and livestreams are not supported
 #[poise::command(slash_command)]
+pub async fn play_test(ctx: Context<'_>) -> Result<(), Error> {
+    let Some(guild_id) = ctx.guild_id() else {
+        ctx.say("I can only operate in a server!").await?;
+        return Ok(());
+    };
+
+    let Some(channel_id) = guild_id
+        .to_guild_cached(ctx.serenity_context())
+        .unwrap()
+        .voice_states
+        .get(&ctx.author().id)
+        .and_then(|vstate| vstate.channel_id)
+    else {
+        ctx.say("You've gotta be in a voice channel to play!")
+            .await?;
+        return Ok(());
+    };
+    ctx.defer().await?;
+    let http_client = {
+        let data = ctx.serenity_context().data.read().await;
+        data.get::<utils::HttpKey>().cloned().unwrap()
+    };
+
+    let manager = songbird::get(ctx.serenity_context()).await.unwrap().clone();
+    let call = manager.join(guild_id, channel_id).await?;
+    let source =
+        songbird::input::YoutubeDl::new(http_client, "https://www.youtube.com/watch?v=uaH2lsqnYhE");
+
+    let source: songbird::input::Input = source.into();
+
+    let mut handler = call.lock().await;
+    handler.play_input(source);
+
+    ctx.say("Playing now").await?;
+    Ok(())
+}
+
+/// Queues a track in, keep in mind that playlists and livestreams are not supported
+#[poise::command(slash_command)]
 pub async fn play(
     ctx: Context<'_>,
     #[description = "YouTube URL or query string"] query: String,
