@@ -8,7 +8,7 @@ resolver = "2"
 
 [dependencies]
 # essentials
-tokio = { version = "1.44.1", features = [
+tokio = { version = "1.50.0", features = [
     "rt",
     "rt-multi-thread",
     "fs",
@@ -17,20 +17,20 @@ tokio = { version = "1.44.1", features = [
 ] }
 poise = "0.6.1"
 songbird = { version = "0.5.0", features = ["builtin-queue"] }
-reqwest = { version = "0.12", default-features = false, features = [
+reqwest = { version = "0.12.15", default-features = false, features = [
     "rustls-tls",
 ] }
 
 # errors/loggings
-log = "0.4.27"
+log = "0.4.29"
 simplelog = "0.12.2"
 eyre = "0.6.12"
 
 # parsings
-toml = "0.8.20"
-serde = "1.0.219"
-regex = "1.11.1"
-humantime = "2.2.0"
+toml = "1.0.6"
+serde = "1.0.228"
+regex = "1.12.3"
+humantime = "2.3.0"
 
 # shuffle
-rand = "0.9.0"
+rand = "0.10.0"
