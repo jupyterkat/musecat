@@ -3485,7 +3485,7 @@ dependencies = [
  "tokio",
  "tokio-tungstenite 0.26.2",
  "tokio-util",
- "tokio-websockets",
+ "tokio-websockets 0.11.4",
  "tracing",
  "tracing-futures",
  "twilight-gateway",
@@ -3951,6 +3951,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "tokio-websockets"
+version = "0.13.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dad543404f98bfc969aeb71994105c592acfc6c43323fddcd016bb208d1c65cb"
+dependencies = [
+ "base64",
+ "bytes",
+ "fastrand",
+ "futures-core",
+ "futures-sink",
+ "http",
+ "httparse",
+ "rustls-native-certs",
+ "rustls-pki-types",
+ "sha1_smol",
+ "simdutf8",
+ "tokio",
+ "tokio-rustls 0.26.4",
+ "tokio-util",
+]
+
+[[package]]
 name = "toml"
 version = "1.1.2+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4177,9 +4199,9 @@ dependencies = [
 
 [[package]]
 name = "twilight-gateway"
-version = "0.16.0"
+version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "863ef55467bcf6a2958162766fd0b72f33112e36971b37f9ec09b86d4fd0f7d1"
+checksum = "59267541c31f888c1587da5e7cbab182ae6efd98faedd9ea2e35a4eef43ff204"
 dependencies = [
  "bitflags 2.11.1",
  "fastrand",
@@ -4188,7 +4210,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
- "tokio-websockets",
+ "tokio-websockets 0.13.2",
  "tracing",
  "twilight-gateway-queue",
  "twilight-model",
@@ -4196,9 +4218,9 @@ dependencies = [
 
 [[package]]
 name = "twilight-gateway-queue"
-version = "0.16.0"
+version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "27c962bd4693da0a215abe6b431fd73eb87111f49c431b87951780f9f7985002"
+checksum = "366a73fe47f61a3d522c3aaf70475e60634b0ae59e7b94272ed7496fffa7ceb7"
 dependencies = [
  "tokio",
  "tracing",
@@ -4206,9 +4228,9 @@ dependencies = [
 
 [[package]]
 name = "twilight-model"
-version = "0.16.0"
+version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "191e2efa051dfbd9bed4c9f6bd3f5e007bda909c687a1db2760371a3d566617d"
+checksum = "2bf6bb7b93a7f765d89b3388cc710c0ae16104579e06bb30ea1ee6bd41420a8b"
 dependencies = [
  "bitflags 2.11.1",
  "serde",
