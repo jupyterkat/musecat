@@ -45,7 +45,7 @@ fn track_duration(
     let loop_button = {
         match info.loops {
             LoopState::Infinite => "🔁",
-            LoopState::Finite(0) => "",
+            LoopState::Finite(nonmax::NonMaxU32::ZERO) => "",
             LoopState::Finite(_) => "🔁",
         }
     };

@@ -133,7 +133,7 @@ pub async fn loop_current(
     ctx: Context<'_>,
     #[description = "Number of times to loop the current track, set to zero or unset for an infinite loop"]
     #[lazy]
-    loop_times: Option<usize>,
+    loop_times: Option<u32>,
 ) -> Result<(), Error> {
     let Some(handler_lock) = utils::get_handler_lock(&ctx).await? else {
         return Ok(());
@@ -145,8 +145,9 @@ pub async fn loop_current(
     };
 
     if let Err(e) = match loop_times {
-        Some(0usize) => trackhandle.enable_loop(),
-        Some(num) => trackhandle.loop_for(num),
+        Some(0u32) => trackhandle.enable_loop(),
+        Some(u32::MAX) => trackhandle.enable_loop(),
+        Some(num) => trackhandle.loop_for(nonmax::NonMaxU32::new(num).unwrap()),
         None => trackhandle.enable_loop(),
     } {
         ctx.say(format!("Error running command:\n```{:?}```", e))
